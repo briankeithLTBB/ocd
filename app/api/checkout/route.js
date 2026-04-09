@@ -7,33 +7,41 @@ const client = new SquareClient({
 });
 
 export async function POST(request) {
-  const { items } = await request.json();
+  try {
+    const { items } = await request.json();
 
-  if (!items || items.length === 0) {
-    return Response.json({ error: "No items in cart" }, { status: 400 });
+    if (!items || items.length === 0) {
+      return Response.json({ error: "No items in cart" }, { status: 400 });
+    }
+
+    const lineItems = items.map((item) => ({
+      name: item.name,
+      quantity: String(item.quantity),
+      basePriceMoney: {
+        amount: BigInt(Math.round(item.price * 100)),
+        currency: "USD",
+      },
+    }));
+
+    const { paymentLink } = await client.checkout.paymentLinks.create({
+      idempotencyKey: randomUUID(),
+      order: {
+        locationId: process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID,
+        lineItems,
+      },
+      checkoutOptions: {
+        allowTipping: false,
+        askForShippingAddress: true,
+        merchantSupportEmail: "ocdbyshelbey@gmail.com",
+      },
+    });
+
+    return Response.json({ url: paymentLink.url });
+  } catch (err) {
+    console.error("Square checkout error:", err);
+    return Response.json(
+      { error: err?.message || "Checkout failed" },
+      { status: 500 }
+    );
   }
-
-  const lineItems = items.map((item) => ({
-    name: item.name,
-    quantity: String(item.quantity),
-    basePriceMoney: {
-      amount: BigInt(Math.round(item.price * 100)),
-      currency: "USD",
-    },
-  }));
-
-  const { paymentLink } = await client.checkout.paymentLinks.create({
-    idempotencyKey: randomUUID(),
-    order: {
-      locationId: process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID,
-      lineItems,
-    },
-    checkoutOptions: {
-      allowTipping: false,
-      askForShippingAddress: true,
-      merchantSupportEmail: "ocdbyshelbey@gmail.com",
-    },
-  });
-
-  return Response.json({ url: paymentLink.url });
 }
