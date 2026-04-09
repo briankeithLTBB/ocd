@@ -22,7 +22,7 @@ export async function POST(request) {
     },
   }));
 
-  const { result } = await client.checkout.paymentLinks.create({
+  const { paymentLink } = await client.checkout.paymentLinks.create({
     idempotencyKey: randomUUID(),
     order: {
       locationId: process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID,
@@ -33,8 +33,7 @@ export async function POST(request) {
       askForShippingAddress: true,
       merchantSupportEmail: "ocdbyshelbey@gmail.com",
     },
-    prePopulatedData: {},
   });
 
-  return Response.json({ url: result.paymentLink.url });
+  return Response.json({ url: paymentLink.url });
 }
