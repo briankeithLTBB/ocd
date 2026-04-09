@@ -101,28 +101,51 @@ const Badge = ({ text, color }) => (
 );
 
 export default function OCDByShelbeySite() {
-  const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    product: "",
-    source: "",
-  });
-  const [submitted, setSubmitted] = useState(false);
-  const [emailInput, setEmailInput] = useState("");
-  const [emailSubmitted, setEmailSubmitted] = useState(false);
+  const [cart, setCart] = useState([]);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [mobileNav, setMobileNav] = useState(false);
-  const [activeSection, setActiveSection] = useState(null);
+
+  const addToCart = (product) => {
+    setCart((prev) => {
+      const existing = prev.find((i) => i.id === product.id);
+      if (existing) {
+        return prev.map((i) => i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i);
+      }
+      return [...prev, { ...product, quantity: 1 }];
+    });
+    setCartOpen(true);
+  };
+
+  const updateQty = (id, delta) => {
+    setCart((prev) =>
+      prev.map((i) => i.id === id ? { ...i, quantity: i.quantity + delta } : i)
+        .filter((i) => i.quantity > 0)
+    );
+  };
+
+  const cartTotal = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const cartCount = cart.reduce((sum, i) => sum + i.quantity, 0);
+
+  const handleCheckout = async () => {
+    setCheckoutLoading(true);
+    const res = await fetch("/api/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items: cart }),
+    });
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      alert("Something went wrong. Please try again.");
+      setCheckoutLoading(false);
+    }
+  };
 
   const scrollTo = (id) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
     setMobileNav(false);
-  };
-
-  const handleReserve = () => {
-    if (formData.name && formData.phone && formData.product) {
-      setSubmitted(true);
-    }
   };
 
   return (
@@ -180,19 +203,33 @@ export default function OCDByShelbeySite() {
           <div className="desktop-nav" style={{ display: "flex", gap: 28, alignItems: "center" }}>
             <span className="nav-link" onClick={() => scrollTo("products")}>Shop</span>
             <span className="nav-link" onClick={() => scrollTo("story")}>Our Story</span>
-            <span className="nav-link" onClick={() => scrollTo("reserve")}>How It Works</span>
             <span className="nav-link" onClick={() => scrollTo("find-us")}>Find Us</span>
             <span className="nav-link" onClick={() => scrollTo("footer")}>Contact</span>
           </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <button
+            onClick={() => setCartOpen(true)}
+            style={{ background: "none", border: "none", cursor: "pointer", position: "relative", padding: 8, display: "flex", alignItems: "center" }}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a1a18" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
+            </svg>
+            {cartCount > 0 && (
+              <span style={{ position: "absolute", top: 2, right: 2, background: "#7F77DD", color: "#fff", borderRadius: "50%", width: 16, height: 16, fontSize: 10, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                {cartCount}
+              </span>
+            )}
+          </button>
           <div className="mobile-toggle" style={{ display: "none", cursor: "pointer", padding: 8 }} onClick={() => setMobileNav(!mobileNav)}>
             <div style={{ width: 22, height: 2, background: "#1a1a18", marginBottom: 5 }} />
             <div style={{ width: 22, height: 2, background: "#1a1a18", marginBottom: 5 }} />
             <div style={{ width: 16, height: 2, background: "#1a1a18" }} />
           </div>
+          </div>
         </div>
         {mobileNav && (
           <div className="mobile-nav-menu" style={{ display: "flex", flexDirection: "column", gap: 0, borderTop: "1px solid #e8e6e0", background: "#FDFCF9" }}>
-            {["products|Shop", "story|Our Story", "reserve|How It Works", "find-us|Find Us", "footer|Contact"].map((item) => {
+            {["products|Shop", "story|Our Story", "find-us|Find Us", "footer|Contact"].map((item) => {
               const [id, label] = item.split("|");
               return <span key={id} className="nav-link" onClick={() => scrollTo(id)} style={{ padding: "14px 1.5rem", borderBottom: "1px solid #f0ede6" }}>{label}</span>;
             })}
@@ -241,7 +278,7 @@ export default function OCDByShelbeySite() {
         </div>
         <div className="product-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20 }}>
           {PRODUCTS.map((p) => (
-            <div key={p.id} className="product-card" onClick={() => { setFormData({ ...formData, product: p.id }); scrollTo("reserve"); }}>
+            <div key={p.id} className="product-card">
               {p.tag && (
                 <div style={{ position: "absolute", top: 16, right: 16 }}>
                   <Badge text={p.tag} color={p.color} />
@@ -253,8 +290,16 @@ export default function OCDByShelbeySite() {
               <h3 style={{ fontSize: 17, fontWeight: 600, marginBottom: 8, letterSpacing: "-0.01em" }}>{p.name}</h3>
               <p style={{ fontSize: 14, color: "#777", lineHeight: 1.55, marginBottom: 20, minHeight: 60 }}>{p.description}</p>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span style={{ fontSize: 22, fontWeight: 600, color: "#1a1a18" }}>${p.price.toFixed(2)}</span>
-                <span style={{ fontSize: 13, color: "#7F77DD", fontWeight: 500, cursor: "pointer" }}>Reserve →</span>
+                <div>
+                  <span style={{ fontSize: 22, fontWeight: 600, color: "#1a1a18" }}>${p.price.toFixed(2)}</span>
+                  <span style={{ fontSize: 11, color: "#aaa", marginLeft: 4 }}>+tax & shipping</span>
+                </div>
+                <button
+                  onClick={() => addToCart(p)}
+                  style={{ fontSize: 13, color: "#FDFCF9", background: "#7F77DD", border: "none", borderRadius: 100, padding: "8px 16px", fontWeight: 500, cursor: "pointer", transition: "background 0.2s" }}
+                >
+                  Add to Cart
+                </button>
               </div>
             </div>
           ))}
@@ -330,14 +375,14 @@ export default function OCDByShelbeySite() {
         <div style={{ textAlign: "center", marginBottom: "3rem" }}>
           <p style={{ fontSize: 13, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", color: "#888", marginBottom: 12 }}>How it works</p>
           <h2 className="serif" style={{ fontSize: "2rem", fontWeight: 500 }}>
-            Reserve Your Batch — We'll Text You When It's Ready.
+            Order Online. We'll Handle the Rest.
           </h2>
         </div>
         <div className="steps-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24, marginBottom: "3.5rem" }}>
           {[
-            { step: "01", title: "Fill out the form", desc: "Tell us your name, how to reach you, and what you want." },
-            { step: "02", title: "We text you", desc: "Pickup details within 48 hours — your batch, your schedule." },
-            { step: "03", title: "Pay at pickup", desc: "Square, Venmo, Cash App, Zelle, or cash. Your call." },
+            { step: "01", title: "Add to cart", desc: "Pick your products and head to checkout." },
+            { step: "02", title: "Pay securely", desc: "Checkout powered by Square — card, Apple Pay, or Google Pay." },
+            { step: "03", title: "We ship or you pick up", desc: "Local DFW pickup available. Ships within 2–3 days." },
           ].map((s) => (
             <div key={s.step} style={{ textAlign: "center", padding: "2rem 1.5rem" }}>
               <div style={{ fontSize: 36, fontWeight: 300, color: "#d0cdc6", marginBottom: 12, fontFamily: "'Playfair Display', serif" }}>{s.step}</div>
@@ -346,42 +391,8 @@ export default function OCDByShelbeySite() {
             </div>
           ))}
         </div>
-
-        {/* ─── RESERVE FORM ─── */}
-        <div style={{ maxWidth: 520, margin: "0 auto", background: "#fff", border: "1px solid #e8e6e0", borderRadius: 20, padding: "2.5rem 2rem" }}>
-          {submitted ? (
-            <div style={{ textAlign: "center", padding: "2rem 0" }}>
-              <div style={{ fontSize: 40, marginBottom: 16 }}>✦</div>
-              <h3 className="serif" style={{ fontSize: 22, marginBottom: 8 }}>You're on the list!</h3>
-              <p style={{ fontSize: 15, color: "#777" }}>We'll text you at <strong>{formData.phone}</strong> with pickup details within 48 hours.</p>
-            </div>
-          ) : (
-            <>
-              <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 24, textAlign: "center" }}>Reserve Your Batch</h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                <input className="form-input" placeholder="Your name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
-                <input className="form-input" placeholder="Phone number" type="tel" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
-                <input className="form-input" placeholder="Email (optional)" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
-                <select className="form-input" value={formData.product} onChange={(e) => setFormData({ ...formData, product: e.target.value })} style={{ color: formData.product ? "#1a1a18" : "#b0ada5" }}>
-                  <option value="" disabled>What are you interested in?</option>
-                  {PRODUCTS.map((p) => (
-                    <option key={p.id} value={p.id}>{p.name} — ${p.price.toFixed(2)}</option>
-                  ))}
-                  <option value="surprise">Not sure yet — surprise me</option>
-                </select>
-                <select className="form-input" value={formData.source} onChange={(e) => setFormData({ ...formData, source: e.target.value })} style={{ color: formData.source ? "#1a1a18" : "#b0ada5" }}>
-                  <option value="" disabled>How did you hear about us?</option>
-                  <option value="instagram">Instagram</option>
-                  <option value="friend">Friend / Family</option>
-                  <option value="event">Market / Event</option>
-                  <option value="other">Other</option>
-                </select>
-                <button className="cta-btn" onClick={handleReserve} style={{ width: "100%", marginTop: 8 }}>
-                  Reserve Now
-                </button>
-              </div>
-            </>
-          )}
+        <div style={{ textAlign: "center" }}>
+          <button className="cta-btn" onClick={() => scrollTo("products")}>Shop Now</button>
         </div>
       </Section>
 
@@ -443,34 +454,57 @@ export default function OCDByShelbeySite() {
         </div>
       </Section>
 
-      {/* ─── EMAIL SIGNUP ─── */}
-      <Section bg="#1a1a18" style={{ padding: "4rem 1.5rem" }}>
-        <div style={{ textAlign: "center", maxWidth: 500, margin: "0 auto" }}>
-          <h2 className="serif" style={{ fontSize: "1.8rem", fontWeight: 500, color: "#FDFCF9", marginBottom: 8 }}>
-            Be the First to Know When New Batches Drop.
-          </h2>
-          <p style={{ fontSize: 14, color: "#888", marginBottom: 24 }}>
-            Join the list and get 10% off your first order.
-          </p>
-          {emailSubmitted ? (
-            <p style={{ color: "#1D9E75", fontSize: 15, fontWeight: 500 }}>You're in! Check your inbox for your 10% off code. ✦</p>
-          ) : (
-            <div style={{ display: "flex", gap: 10 }}>
-              <input
-                className="form-input"
-                placeholder="Your email"
-                type="email"
-                value={emailInput}
-                onChange={(e) => setEmailInput(e.target.value)}
-                style={{ flex: 1, background: "#2a2a28", border: "1.5px solid #3a3a38", color: "#FDFCF9" }}
-              />
-              <button className="cta-btn" onClick={() => emailInput && setEmailSubmitted(true)} style={{ background: "#FDFCF9", color: "#1a1a18", padding: "14px 28px" }}>
-                Sign Me Up
-              </button>
+      {/* ─── CART DRAWER ─── */}
+      {cartOpen && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex" }}>
+          <div style={{ flex: 1, background: "rgba(0,0,0,0.4)" }} onClick={() => setCartOpen(false)} />
+          <div style={{ width: 400, maxWidth: "100vw", background: "#FDFCF9", display: "flex", flexDirection: "column", boxShadow: "-4px 0 30px rgba(0,0,0,0.1)" }}>
+            <div style={{ padding: "1.5rem", borderBottom: "1px solid #e8e6e0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <h3 style={{ fontSize: 16, fontWeight: 600 }}>Your Cart ({cartCount})</h3>
+              <button onClick={() => setCartOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22, color: "#888", lineHeight: 1 }}>×</button>
             </div>
-          )}
+            <div style={{ flex: 1, overflowY: "auto", padding: "1rem 1.5rem" }}>
+              {cart.length === 0 ? (
+                <p style={{ color: "#aaa", fontSize: 14, textAlign: "center", marginTop: "3rem" }}>Your cart is empty.</p>
+              ) : (
+                cart.map((item) => (
+                  <div key={item.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "1rem 0", borderBottom: "1px solid #f0ede6" }}>
+                    <div style={{ width: 56, height: 56, borderRadius: 10, overflow: "hidden", background: item.color + "14", flexShrink: 0 }}>
+                      <img src={item.image} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 2 }}>{item.name}</p>
+                      <p style={{ fontSize: 13, color: "#888" }}>${item.price.toFixed(2)} +tax & shipping</p>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <button onClick={() => updateQty(item.id, -1)} style={{ width: 28, height: 28, border: "1px solid #e0ddd6", borderRadius: 6, background: "#fff", cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>−</button>
+                      <span style={{ fontSize: 14, fontWeight: 500, minWidth: 16, textAlign: "center" }}>{item.quantity}</span>
+                      <button onClick={() => updateQty(item.id, 1)} style={{ width: 28, height: 28, border: "1px solid #e0ddd6", borderRadius: 6, background: "#fff", cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+            {cart.length > 0 && (
+              <div style={{ padding: "1.5rem", borderTop: "1px solid #e8e6e0" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, fontSize: 14, color: "#555" }}>
+                  <span>Subtotal</span>
+                  <span>${cartTotal.toFixed(2)}</span>
+                </div>
+                <p style={{ fontSize: 12, color: "#aaa", marginBottom: 16 }}>Tax & shipping calculated at checkout</p>
+                <button
+                  className="cta-btn"
+                  onClick={handleCheckout}
+                  disabled={checkoutLoading}
+                  style={{ width: "100%", textAlign: "center", opacity: checkoutLoading ? 0.7 : 1 }}
+                >
+                  {checkoutLoading ? "Redirecting..." : "Checkout"}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-      </Section>
+      )}
 
       {/* ─── FOOTER ─── */}
       <footer id="footer" style={{ background: "#1a1a18", borderTop: "1px solid #2a2a28", padding: "2.5rem 1.5rem 2rem" }}>
