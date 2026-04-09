@@ -1,65 +1,499 @@
-import Image from "next/image";
+"use client";
+import { useState } from "react";
 
-export default function Home() {
+// ═══════════════════════════════════════════════════════════════
+// SITE DATA — Cowork updates this section to change the site
+// ═══════════════════════════════════════════════════════════════
+const PRODUCTS = [
+  {
+    id: "n3-bundle",
+    name: "Narcissist Bundle",
+    tag: "Best Value",
+    description: "Everything you need. Soap + 2 Scented Laundry Balls + Scent Refill.",
+    price: 25.0,
+    color: "#7F77DD",
+    image: "/images/p_Narcissist Bundle.jpeg",
+  },
+  {
+    id: "n3-soap",
+    name: "Narcissist Soap",
+    tag: null,
+    description: "One batch of our signature scented laundry soap. Your closet will thank you.",
+    price: 20.0,
+    color: "#1D9E75",
+    image: "/images/p_Narcissist Soap.jpeg",
+  },
+  {
+    id: "n3-slb",
+    name: "Scented Laundry Balls",
+    tag: "Try Me",
+    description: "2 wool dryer balls + 1 scent refill dropper. Toss them in. Smell incredible.",
+    price: 6.0,
+    color: "#378ADD",
+    image: "/images/p_Scented Laundry Balls.jpeg",
+  },
+  {
+    id: "f3-soap",
+    name: "Fragrance Free",
+    tag: null,
+    description: "Same obsessive clean — zero fragrance. For sensitive skin, babies, and pure lovers.",
+    price: 14.0,
+    color: "#888780",
+    image: "/images/p_Narcissist Soap.jpeg",
+  },
+];
+
+const TESTIMONIALS = [
+  { quote: "My whole closet smells like fresh laundry now. I'm obsessed.", name: "Jasmine T.", location: "Irving, TX" },
+  { quote: "My kid's skin finally stopped breaking out after we switched.", name: "Marcus R.", location: "Dallas, TX" },
+  { quote: "Shelbey's detergent is the only reason my whites are actually white.", name: "Denise W.", location: "Grand Prairie, TX" },
+  { quote: "I've been using this for 3 weeks and my robe has never smelled better.", name: "Ray B.", location: "Dallas, TX" },
+];
+
+const UPCOMING_EVENTS = [
+  // Cowork: add events here as they're confirmed
+  // { name: "Mansfield Earth Day", date: "Apr 25-26", location: "620 S. Wisteria St, Mansfield TX" },
+];
+
+const SAFETY_BADGES = [
+  "Hypoallergenic",
+  "No Harsh Chemicals",
+  "Skin Safe",
+  "HE Machine Safe",
+  "Cold Wash Friendly",
+];
+
+const INGREDIENTS = [
+  "Washing Soda",
+  "Coconut Laundry Soap",
+  "Sodium Citrate",
+  "OxiClean Stain Remover",
+];
+
+// ═══════════════════════════════════════════════════════════════
+
+const fonts = `
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300;1,9..40,400&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+`;
+
+const Section = ({ children, id, bg = "transparent", style = {} }) => (
+  <section id={id} style={{ padding: "5rem 1.5rem", background: bg, ...style }}>
+    <div style={{ maxWidth: 1100, margin: "0 auto" }}>{children}</div>
+  </section>
+);
+
+const Badge = ({ text, color }) => (
+  <span
+    style={{
+      display: "inline-block",
+      fontSize: 11,
+      fontWeight: 600,
+      letterSpacing: "0.08em",
+      textTransform: "uppercase",
+      padding: "4px 12px",
+      borderRadius: 100,
+      background: color + "18",
+      color: color,
+    }}
+  >
+    {text}
+  </span>
+);
+
+export default function OCDByShelbeySite() {
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    product: "",
+    source: "",
+  });
+  const [submitted, setSubmitted] = useState(false);
+  const [emailInput, setEmailInput] = useState("");
+  const [emailSubmitted, setEmailSubmitted] = useState(false);
+  const [mobileNav, setMobileNav] = useState(false);
+  const [activeSection, setActiveSection] = useState(null);
+
+  const scrollTo = (id) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    setMobileNav(false);
+  };
+
+  const handleReserve = () => {
+    if (formData.name && formData.phone && formData.product) {
+      setSubmitted(true);
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.js file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div style={{ fontFamily: "'DM Sans', sans-serif", color: "#1a1a18", background: "#FDFCF9", minHeight: "100vh", overflowX: "hidden" }}>
+      <style>{fonts + `
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        ::selection { background: #7F77DD33; }
+        input, select, textarea { font-family: 'DM Sans', sans-serif; }
+        .nav-link { color: #5a5a56; text-decoration: none; font-size: 13px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; transition: color 0.2s; cursor: pointer; }
+        .nav-link:hover { color: #1a1a18; }
+        .product-card { background: #fff; border: 1px solid #e8e6e0; border-radius: 16px; padding: 2rem 1.75rem; transition: all 0.3s ease; cursor: pointer; position: relative; overflow: hidden; }
+        .product-card:hover { border-color: #ccc; transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.06); }
+        .cta-btn { display: inline-block; background: #1a1a18; color: #FDFCF9; border: none; padding: 16px 36px; border-radius: 100px; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.25s ease; letter-spacing: 0.02em; text-decoration: none; }
+        .cta-btn:hover { background: #333; transform: translateY(-1px); }
+        .cta-btn-outline { display: inline-block; background: transparent; color: #1a1a18; border: 1.5px solid #1a1a18; padding: 14px 32px; border-radius: 100px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.25s ease; letter-spacing: 0.02em; }
+        .cta-btn-outline:hover { background: #1a1a18; color: #FDFCF9; }
+        .safety-pill { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 100px; background: #fff; border: 1px solid #e8e6e0; font-size: 14px; color: #444; font-weight: 400; }
+        .form-input { width: 100%; padding: 14px 18px; border: 1.5px solid #e0ddd6; border-radius: 12px; font-size: 15px; background: #fff; color: #1a1a18; outline: none; transition: border 0.2s; }
+        .form-input:focus { border-color: #7F77DD; }
+        .form-input::placeholder { color: #b0ada5; }
+        .testimonial-card { background: #fff; border: 1px solid #e8e6e0; border-radius: 16px; padding: 2rem; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-up { animation: fadeUp 0.6s ease forwards; }
+        .serif { font-family: 'Playfair Display', Georgia, serif; }
+        @media (max-width: 768px) {
+          .desktop-nav { display: none !important; }
+          .mobile-toggle { display: flex !important; }
+          .hero-grid { flex-direction: column !important; text-align: center; }
+          .hero-text h1 { font-size: 2.2rem !important; }
+          .product-grid { grid-template-columns: 1fr !important; }
+          .story-grid { grid-template-columns: 1fr !important; }
+          .testimonial-grid { grid-template-columns: 1fr !important; }
+          .safety-wrap { justify-content: center !important; }
+          .steps-grid { grid-template-columns: 1fr !important; }
+          .mobile-nav-menu { display: flex !important; }
+        }
+        @media (min-width: 769px) {
+          .mobile-toggle { display: none !important; }
+          .mobile-nav-menu { display: none !important; }
+        }
+      `}</style>
+
+      {/* ─── ANNOUNCEMENT BANNER ─── */}
+      <div style={{ background: "#1a1a18", color: "#FDFCF9", textAlign: "center", padding: "10px 1rem", fontSize: 13, fontWeight: 400, letterSpacing: "0.04em" }}>
+        Local DFW Pickup Available — Reserve yours today
+      </div>
+
+      {/* ─── NAV ─── */}
+      <nav style={{ position: "sticky", top: 0, zIndex: 100, background: "#FDFCF9ee", backdropFilter: "blur(12px)", borderBottom: "1px solid #e8e6e0" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 1.5rem", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64 }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 6, cursor: "pointer" }} onClick={() => scrollTo("hero")}>
+            <span style={{ fontWeight: 600, fontSize: 18, letterSpacing: "-0.02em" }}>OCD</span>
+            <span style={{ fontSize: 12, color: "#888", fontWeight: 400 }}>by Shelbey</span>
+          </div>
+          <div className="desktop-nav" style={{ display: "flex", gap: 28, alignItems: "center" }}>
+            <span className="nav-link" onClick={() => scrollTo("products")}>Shop</span>
+            <span className="nav-link" onClick={() => scrollTo("story")}>Our Story</span>
+            <span className="nav-link" onClick={() => scrollTo("reserve")}>How It Works</span>
+            <span className="nav-link" onClick={() => scrollTo("find-us")}>Find Us</span>
+            <span className="nav-link" onClick={() => scrollTo("footer")}>Contact</span>
+          </div>
+          <div className="mobile-toggle" style={{ display: "none", cursor: "pointer", padding: 8 }} onClick={() => setMobileNav(!mobileNav)}>
+            <div style={{ width: 22, height: 2, background: "#1a1a18", marginBottom: 5 }} />
+            <div style={{ width: 22, height: 2, background: "#1a1a18", marginBottom: 5 }} />
+            <div style={{ width: 16, height: 2, background: "#1a1a18" }} />
+          </div>
+        </div>
+        {mobileNav && (
+          <div className="mobile-nav-menu" style={{ display: "flex", flexDirection: "column", gap: 0, borderTop: "1px solid #e8e6e0", background: "#FDFCF9" }}>
+            {["products|Shop", "story|Our Story", "reserve|How It Works", "find-us|Find Us", "footer|Contact"].map((item) => {
+              const [id, label] = item.split("|");
+              return <span key={id} className="nav-link" onClick={() => scrollTo(id)} style={{ padding: "14px 1.5rem", borderBottom: "1px solid #f0ede6" }}>{label}</span>;
+            })}
+          </div>
+        )}
+      </nav>
+
+      {/* ─── HERO ─── */}
+      <Section id="hero" style={{ paddingTop: "4rem", paddingBottom: "4rem" }}>
+        <div className="hero-grid" style={{ display: "flex", alignItems: "center", gap: "3rem" }}>
+          <div className="hero-text" style={{ flex: 1 }}>
+            <p style={{ fontSize: 13, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", color: "#7F77DD", marginBottom: 16 }}>
+              Obsessively Clean. No Compromises.
+            </p>
+            <h1 className="serif" style={{ fontSize: "3rem", fontWeight: 500, lineHeight: 1.15, color: "#1a1a18", marginBottom: 20, letterSpacing: "-0.02em" }}>
+              Detergent made by someone who rewashes a sweater after one evening on the couch.
+            </h1>
+            <p style={{ fontSize: 17, color: "#6b6b66", lineHeight: 1.6, marginBottom: 32, maxWidth: 480 }}>
+              Small-batch, skin-safe, obsessively formulated — handmade in Dallas.
+            </p>
+            <button className="cta-btn" onClick={() => scrollTo("reserve")}>Reserve Your First Batch</button>
+          </div>
+          <div style={{ flex: "0 0 380px", position: "relative" }}>
+            <div style={{ width: "100%", aspectRatio: "4/5", borderRadius: 20, overflow: "hidden", background: "#f0ede6" }}>
+              <img
+                src="/images/hero_1.jpg"
+                alt="Shelbey holding OCD by Shelbey detergent"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+
+              />
+            </div>
+            <div style={{ position: "absolute", bottom: -16, right: -16, background: "#1a1a18", color: "#FDFCF9", borderRadius: 14, padding: "14px 20px", fontSize: 13, fontWeight: 500, letterSpacing: "0.02em" }}>
+              Made in Dallas, TX ✦
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* ─── PRODUCTS ─── */}
+      <Section id="products" bg="#f7f5f0">
+        <div style={{ textAlign: "center", marginBottom: "3rem" }}>
+          <p style={{ fontSize: 13, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", color: "#888", marginBottom: 12 }}>The lineup</p>
+          <h2 className="serif" style={{ fontSize: "2.2rem", fontWeight: 500, letterSpacing: "-0.01em" }}>
+            For people who think "kind of clean" isn't clean enough
+          </h2>
+        </div>
+        <div className="product-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20 }}>
+          {PRODUCTS.map((p) => (
+            <div key={p.id} className="product-card" onClick={() => { setFormData({ ...formData, product: p.id }); scrollTo("reserve"); }}>
+              {p.tag && (
+                <div style={{ position: "absolute", top: 16, right: 16 }}>
+                  <Badge text={p.tag} color={p.color} />
+                </div>
+              )}
+              <div style={{ width: "100%", aspectRatio: "4/3", borderRadius: 12, overflow: "hidden", background: p.color + "14", marginBottom: 20 }}>
+                <img src={p.image} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              </div>
+              <h3 style={{ fontSize: 17, fontWeight: 600, marginBottom: 8, letterSpacing: "-0.01em" }}>{p.name}</h3>
+              <p style={{ fontSize: 14, color: "#777", lineHeight: 1.55, marginBottom: 20, minHeight: 60 }}>{p.description}</p>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span style={{ fontSize: 22, fontWeight: 600, color: "#1a1a18" }}>${p.price.toFixed(2)}</span>
+                <span style={{ fontSize: 13, color: "#7F77DD", fontWeight: 500, cursor: "pointer" }}>Reserve →</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      {/* ─── STORY ─── */}
+      <Section id="story">
+        <div className="story-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4rem", alignItems: "center" }}>
+          <div>
+            <p style={{ fontSize: 13, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", color: "#888", marginBottom: 12 }}>Our story</p>
+            <h2 className="serif" style={{ fontSize: "2rem", fontWeight: 500, marginBottom: 20, letterSpacing: "-0.01em" }}>
+              By Shelbey. Obsessively Made.
+            </h2>
+            <div style={{ fontSize: 16, color: "#555", lineHeight: 1.75 }}>
+              <p style={{ marginBottom: 16 }}>
+                OCD stands for Obsessively Clean Detergent. It started with Shelbey — a Dallas girl who runs projects at work and an obsessively clean home on her own time.
+              </p>
+              <p style={{ marginBottom: 16 }}>
+                Her idea of "worn once" is reason enough to rewash a sweater, so her whole house smells like fresh laundry. Always.
+              </p>
+              <p style={{ marginBottom: 16 }}>
+                She started making her own detergent because nothing on the shelf matched her standards — no harsh chemicals, no mystery ingredients, just clean. Friends tried it. Then their friends. Then people started asking where to buy it.
+              </p>
+              <p>
+                This is that detergent. Small-batch. Handmade in Dallas. Made with the same obsessive care Shelbey puts into every load at home.
+              </p>
+            </div>
+          </div>
+          <div style={{ position: "relative" }}>
+            <div style={{ width: "100%", aspectRatio: "1", borderRadius: 20, overflow: "hidden", background: "#f0ede6" }}>
+              <img
+                src="/images/IMG_1328.jpeg"
+                alt="Shelbey making detergent"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+
+              />
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* ─── SAFE FOR SKIN ─── */}
+      <Section bg="#f7f5f0">
+        <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
+          <h2 className="serif" style={{ fontSize: "2rem", fontWeight: 500, marginBottom: 12 }}>
+            Safe for Skin, Clothes & Your Home
+          </h2>
+          <p style={{ fontSize: 16, color: "#777", maxWidth: 500, margin: "0 auto" }}>
+            Gentle, effective, and made without mystery ingredients.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <div className="safety-wrap" style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center", marginBottom: "2rem" }}>
+          {SAFETY_BADGES.map((b) => (
+            <div key={b} className="safety-pill">
+              <span style={{ color: "#1D9E75", fontSize: 15, fontWeight: 600 }}>✓</span> {b}
+            </div>
+          ))}
         </div>
-      </main>
+        <div style={{ textAlign: "center" }}>
+          <p style={{ fontSize: 14, color: "#888", marginBottom: 6 }}>
+            <span style={{ fontWeight: 500, color: "#666" }}>Made with:</span>{" "}
+            {INGREDIENTS.join(" · ")}
+          </p>
+          <p style={{ fontSize: 13, color: "#aaa" }}>
+            No sulfates. No parabens. No synthetic dyes. No fillers.
+          </p>
+        </div>
+      </Section>
+
+      {/* ─── HOW IT WORKS ─── */}
+      <Section id="reserve">
+        <div style={{ textAlign: "center", marginBottom: "3rem" }}>
+          <p style={{ fontSize: 13, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", color: "#888", marginBottom: 12 }}>How it works</p>
+          <h2 className="serif" style={{ fontSize: "2rem", fontWeight: 500 }}>
+            Reserve Your Batch — We'll Text You When It's Ready.
+          </h2>
+        </div>
+        <div className="steps-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24, marginBottom: "3.5rem" }}>
+          {[
+            { step: "01", title: "Fill out the form", desc: "Tell us your name, how to reach you, and what you want." },
+            { step: "02", title: "We text you", desc: "Pickup details within 48 hours — your batch, your schedule." },
+            { step: "03", title: "Pay at pickup", desc: "Square, Venmo, Cash App, Zelle, or cash. Your call." },
+          ].map((s) => (
+            <div key={s.step} style={{ textAlign: "center", padding: "2rem 1.5rem" }}>
+              <div style={{ fontSize: 36, fontWeight: 300, color: "#d0cdc6", marginBottom: 12, fontFamily: "'Playfair Display', serif" }}>{s.step}</div>
+              <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>{s.title}</h3>
+              <p style={{ fontSize: 14, color: "#777", lineHeight: 1.55 }}>{s.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* ─── RESERVE FORM ─── */}
+        <div style={{ maxWidth: 520, margin: "0 auto", background: "#fff", border: "1px solid #e8e6e0", borderRadius: 20, padding: "2.5rem 2rem" }}>
+          {submitted ? (
+            <div style={{ textAlign: "center", padding: "2rem 0" }}>
+              <div style={{ fontSize: 40, marginBottom: 16 }}>✦</div>
+              <h3 className="serif" style={{ fontSize: 22, marginBottom: 8 }}>You're on the list!</h3>
+              <p style={{ fontSize: 15, color: "#777" }}>We'll text you at <strong>{formData.phone}</strong> with pickup details within 48 hours.</p>
+            </div>
+          ) : (
+            <>
+              <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 24, textAlign: "center" }}>Reserve Your Batch</h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                <input className="form-input" placeholder="Your name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+                <input className="form-input" placeholder="Phone number" type="tel" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
+                <input className="form-input" placeholder="Email (optional)" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
+                <select className="form-input" value={formData.product} onChange={(e) => setFormData({ ...formData, product: e.target.value })} style={{ color: formData.product ? "#1a1a18" : "#b0ada5" }}>
+                  <option value="" disabled>What are you interested in?</option>
+                  {PRODUCTS.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name} — ${p.price.toFixed(2)}</option>
+                  ))}
+                  <option value="surprise">Not sure yet — surprise me</option>
+                </select>
+                <select className="form-input" value={formData.source} onChange={(e) => setFormData({ ...formData, source: e.target.value })} style={{ color: formData.source ? "#1a1a18" : "#b0ada5" }}>
+                  <option value="" disabled>How did you hear about us?</option>
+                  <option value="instagram">Instagram</option>
+                  <option value="friend">Friend / Family</option>
+                  <option value="event">Market / Event</option>
+                  <option value="other">Other</option>
+                </select>
+                <button className="cta-btn" onClick={handleReserve} style={{ width: "100%", marginTop: 8 }}>
+                  Reserve Now
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </Section>
+
+      {/* ─── TESTIMONIALS ─── */}
+      <Section bg="#f7f5f0">
+        <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
+          <p style={{ fontSize: 13, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", color: "#888", marginBottom: 12 }}>Real people, real loads</p>
+          <h2 className="serif" style={{ fontSize: "2rem", fontWeight: 500 }}>
+            This Is Literally Who We Make It For.
+          </h2>
+        </div>
+        <div className="testimonial-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+          {TESTIMONIALS.map((t, i) => (
+            <div key={i} className="testimonial-card">
+              <div style={{ fontSize: 28, color: "#d0cdc6", marginBottom: 12, fontFamily: "'Playfair Display', serif" }}>"</div>
+              <p style={{ fontSize: 16, color: "#333", lineHeight: 1.6, marginBottom: 16, fontStyle: "italic" }}>
+                {t.quote}
+              </p>
+              <p style={{ fontSize: 13, fontWeight: 600, color: "#888" }}>
+                — {t.name}, <span style={{ fontWeight: 400 }}>{t.location}</span>
+              </p>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      {/* ─── FIND US ─── */}
+      <Section id="find-us">
+        <div style={{ textAlign: "center" }}>
+          <p style={{ fontSize: 13, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", color: "#888", marginBottom: 12 }}>Find us</p>
+          <h2 className="serif" style={{ fontSize: "2rem", fontWeight: 500, marginBottom: 16 }}>
+            Where to Find Us
+          </h2>
+          <p style={{ fontSize: 16, color: "#777", maxWidth: 460, margin: "0 auto 2rem" }}>
+            We're popping up at markets and events across DFW. Follow{" "}
+            <a href="https://instagram.com/ocdbyshelbey" target="_blank" rel="noopener noreferrer" style={{ color: "#7F77DD", textDecoration: "none", fontWeight: 500 }}>
+              @ocdbyshelbey
+            </a>{" "}
+            on Instagram for the latest dates.
+          </p>
+          {UPCOMING_EVENTS.length > 0 ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 500, margin: "0 auto" }}>
+              {UPCOMING_EVENTS.map((ev, i) => (
+                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px", background: "#fff", border: "1px solid #e8e6e0", borderRadius: 12 }}>
+                  <div style={{ textAlign: "left" }}>
+                    <p style={{ fontWeight: 600, fontSize: 15 }}>{ev.name}</p>
+                    <p style={{ fontSize: 13, color: "#888" }}>{ev.location}</p>
+                  </div>
+                  <Badge text={ev.date} color="#7F77DD" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ padding: "2rem", background: "#fff", border: "1px solid #e8e6e0", borderRadius: 16, maxWidth: 420, margin: "0 auto" }}>
+              <p style={{ fontSize: 15, color: "#999" }}>Upcoming events dropping soon.</p>
+              <p style={{ fontSize: 13, color: "#bbb", marginTop: 6 }}>Follow us on Instagram to be the first to know.</p>
+            </div>
+          )}
+        </div>
+      </Section>
+
+      {/* ─── EMAIL SIGNUP ─── */}
+      <Section bg="#1a1a18" style={{ padding: "4rem 1.5rem" }}>
+        <div style={{ textAlign: "center", maxWidth: 500, margin: "0 auto" }}>
+          <h2 className="serif" style={{ fontSize: "1.8rem", fontWeight: 500, color: "#FDFCF9", marginBottom: 8 }}>
+            Be the First to Know When New Batches Drop.
+          </h2>
+          <p style={{ fontSize: 14, color: "#888", marginBottom: 24 }}>
+            Join the list and get 10% off your first order.
+          </p>
+          {emailSubmitted ? (
+            <p style={{ color: "#1D9E75", fontSize: 15, fontWeight: 500 }}>You're in! Check your inbox for your 10% off code. ✦</p>
+          ) : (
+            <div style={{ display: "flex", gap: 10 }}>
+              <input
+                className="form-input"
+                placeholder="Your email"
+                type="email"
+                value={emailInput}
+                onChange={(e) => setEmailInput(e.target.value)}
+                style={{ flex: 1, background: "#2a2a28", border: "1.5px solid #3a3a38", color: "#FDFCF9" }}
+              />
+              <button className="cta-btn" onClick={() => emailInput && setEmailSubmitted(true)} style={{ background: "#FDFCF9", color: "#1a1a18", padding: "14px 28px" }}>
+                Sign Me Up
+              </button>
+            </div>
+          )}
+        </div>
+      </Section>
+
+      {/* ─── FOOTER ─── */}
+      <footer id="footer" style={{ background: "#1a1a18", borderTop: "1px solid #2a2a28", padding: "2.5rem 1.5rem 2rem" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
+          <div>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 6 }}>
+              <span style={{ fontWeight: 600, fontSize: 16, color: "#FDFCF9" }}>OCD</span>
+              <span style={{ fontSize: 12, color: "#666" }}>by Shelbey</span>
+            </div>
+            <p style={{ fontSize: 13, color: "#555" }}>Made in Dallas, TX with obsessive attention to clean.</p>
+          </div>
+          <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
+            <span className="nav-link" onClick={() => scrollTo("story")} style={{ color: "#777" }}>Our Story</span>
+            <span className="nav-link" onClick={() => scrollTo("find-us")} style={{ color: "#777" }}>Find Us</span>
+            <a href="https://instagram.com/ocdbyshelbey" target="_blank" rel="noopener noreferrer" style={{ color: "#777", fontSize: 13, textDecoration: "none", fontWeight: 500 }}>
+              @ocdbyshelbey
+            </a>
+          </div>
+        </div>
+        <div style={{ maxWidth: 1100, margin: "1.5rem auto 0", paddingTop: "1.5rem", borderTop: "1px solid #2a2a28", textAlign: "center" }}>
+          <p style={{ fontSize: 12, color: "#444" }}>© 2026 Obsessively Clean Detergent by Shelbey. All Rights Reserved.</p>
+        </div>
+      </footer>
     </div>
   );
 }
