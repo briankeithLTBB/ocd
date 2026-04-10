@@ -37,6 +37,14 @@ export async function POST(request) {
             scope: "LINE_ITEM",
           },
         ],
+        serviceCharges: [
+          {
+            uid: "shipping",
+            name: "Shipping",
+            amountMoney: { amount: BigInt(1000), currency: "USD" },
+            calculationPhase: "SUBTOTAL_PHASE",
+          },
+        ],
       },
       checkoutOptions: {
         allowTipping: false,
