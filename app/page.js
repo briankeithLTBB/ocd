@@ -332,8 +332,8 @@ export default function OCDByShelbeySite() {
           <div style={{ position: "relative" }}>
             <div style={{ width: "100%", aspectRatio: "1", borderRadius: 20, overflow: "hidden", background: "#f0ede6" }}>
               <img
-                src="/images/IMG_1328.jpeg"
-                alt="Shelbey making detergent"
+                src="/images/hero_2.jpeg"
+                alt="Shelbey holding OCD by Shelbey detergent"
                 style={{ width: "100%", height: "100%", objectFit: "cover" }}
 
               />
