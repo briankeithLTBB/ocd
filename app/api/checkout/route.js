@@ -14,6 +14,7 @@ export async function POST(request) {
       return Response.json({ error: "No items in cart" }, { status: 400 });
     }
 
+    const TAX_UID = "texas-sales-tax";
     const lineItems = items.map((item) => ({
       name: item.name,
       quantity: String(item.quantity),
@@ -21,6 +22,7 @@ export async function POST(request) {
         amount: BigInt(Math.round(item.price * 100)),
         currency: "USD",
       },
+      appliedTaxes: [{ taxUid: TAX_UID }],
     }));
 
     const { paymentLink } = await client.checkout.paymentLinks.create({
@@ -28,6 +30,13 @@ export async function POST(request) {
       order: {
         locationId: process.env.NEXT_PUBLIC_SQUARE_LOCATION_ID,
         lineItems,
+        taxes: [
+          {
+            uid: TAX_UID,
+            catalogObjectId: "XKFPFU7NBDPDQAMRYZDJZ7TC",
+            scope: "LINE_ITEM",
+          },
+        ],
       },
       checkoutOptions: {
         allowTipping: false,
