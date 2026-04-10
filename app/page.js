@@ -284,8 +284,8 @@ export default function OCDByShelbeySite() {
                   <Badge text={p.tag} color={p.color} />
                 </div>
               )}
-              <div style={{ width: "100%", aspectRatio: "4/3", borderRadius: 12, overflow: "hidden", background: p.color + "14", marginBottom: 20 }}>
-                <img src={p.image} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <div style={{ width: "100%", aspectRatio: "4/3", borderRadius: 12, overflow: "hidden", background: p.color + "14", marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <img src={p.image} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "contain", padding: "8px" }} />
               </div>
               <h3 style={{ fontSize: 17, fontWeight: 600, marginBottom: 8, letterSpacing: "-0.01em" }}>{p.name}</h3>
               <p style={{ fontSize: 14, color: "#777", lineHeight: 1.55, marginBottom: 20, minHeight: 60 }}>{p.description}</p>
