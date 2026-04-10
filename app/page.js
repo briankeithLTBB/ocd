@@ -399,9 +399,9 @@ export default function OCDByShelbeySite() {
       {/* ─── TESTIMONIALS ─── */}
       <Section bg="#f7f5f0">
         <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
-          <p style={{ fontSize: 13, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", color: "#888", marginBottom: 12 }}>Real people, real loads</p>
+          <p style={{ fontSize: 13, fontWeight: 500, letterSpacing: "0.1em", textTransform: "uppercase", color: "#888", marginBottom: 12 }}>Real customers. Real results.</p>
           <h2 className="serif" style={{ fontSize: "2rem", fontWeight: 500 }}>
-            This Is Literally Who We Make It For.
+            Made for homes like yours.
           </h2>
         </div>
         <div className="testimonial-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
