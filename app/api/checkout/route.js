@@ -8,10 +8,10 @@ const client = new SquareClient({
 
 // Weights in ounces per unit
 const PRODUCT_WEIGHTS = {
-  "n3-bundle": 32, // soap + 2 dryer balls + refill
-  "n3-soap":   24, // 1 bag laundry soap
-  "n3-slb":     8, // 2 dryer balls + dropper
-  "f3-soap":   24, // 1 bag fragrance free soap
+  "n3-bundle": 32, // 2 lbs
+  "n3-soap":   24, // 1.5 lbs
+  "n3-slb":     8, // 0.5 lbs
+  "f3-soap":   24, // 1.5 lbs
 };
 
 // USPS Ground Advantage rates by total weight (oz)
