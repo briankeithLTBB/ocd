@@ -6,6 +6,24 @@ const client = new SquareClient({
   environment: SquareEnvironment.Production,
 });
 
+// Weights in ounces per unit
+const PRODUCT_WEIGHTS = {
+  "n3-bundle": 32, // soap + 2 dryer balls + refill
+  "n3-soap":   24, // 1 bag laundry soap
+  "n3-slb":     8, // 2 dryer balls + dropper
+  "f3-soap":   24, // 1 bag fragrance free soap
+};
+
+// USPS Ground Advantage rates by total weight (oz)
+// Covers most continental US destinations
+function shippingRate(totalOz) {
+  if (totalOz <= 15.9)  return 5.00; // under 1 lb
+  if (totalOz <= 32)    return 8.00; // 1–2 lbs
+  if (totalOz <= 48)    return 10.00; // 2–3 lbs
+  if (totalOz <= 64)    return 12.00; // 3–4 lbs
+  return 15.00;                        // 4+ lbs
+}
+
 export async function POST(request) {
   try {
     const { items } = await request.json();
@@ -13,6 +31,13 @@ export async function POST(request) {
     if (!items || items.length === 0) {
       return Response.json({ error: "No items in cart" }, { status: 400 });
     }
+
+    const totalOz = items.reduce((sum, item) => {
+      const weight = PRODUCT_WEIGHTS[item.id] ?? 24;
+      return sum + weight * item.quantity;
+    }, 0);
+
+    const shipping = shippingRate(totalOz);
 
     const TAX_UID = "texas-sales-tax";
     const lineItems = items.map((item) => ({
@@ -40,8 +65,8 @@ export async function POST(request) {
         serviceCharges: [
           {
             uid: "shipping",
-            name: "Shipping",
-            amountMoney: { amount: BigInt(1000), currency: "USD" },
+            name: "Shipping (USPS Ground Advantage)",
+            amountMoney: { amount: BigInt(Math.round(shipping * 100)), currency: "USD" },
             calculationPhase: "SUBTOTAL_PHASE",
           },
         ],
